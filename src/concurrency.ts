@@ -34,7 +34,7 @@ export const concurrency = <T, U>(
       });
     }
 
-    const addToInput = (item: T) => input.push(item);
+    const addToTail = (item: T) => input.push(item);
 
     const promises = Array<ArrayIterator<T>>(options.concurrency || DEFAULT_CONCURRENCY)
       .fill(iterator)
@@ -42,12 +42,29 @@ export const concurrency = <T, U>(
         for (const item of items) {
           if (isAborted) break;
           let result: Result<U> = { type: 'empty' };
+          let isSkipped = false;
+          let error: Error | null = null;
+
+          const skip = () => ((isSkipped = true), null);
+          const throwError = (err: Error) => ((error = err), null);
 
           try {
-            const payload = await retry(() => handler(item, addToInput), options.retries || DEFAULT_RETRY_COUNT);
-            if (payload) {
+            const payload = await retry(
+              () => handler(item, { addToTail, skip, throwError }),
+              options.retries || DEFAULT_RETRY_COUNT,
+            );
+
+            if (payload && !isSkipped) {
               result = { type: 'result', data: payload };
               results.push(payload);
+            }
+
+            if (isSkipped) {
+              result = { type: 'skipped' };
+            }
+
+            if (error) {
+              throw error;
             }
           } catch (error) {
             result = { type: 'error', error: error as Error };

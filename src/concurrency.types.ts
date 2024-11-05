@@ -1,4 +1,10 @@
-export type Handler<T, U> = (item: T, addFunction: (item: T) => void) => Promise<U | void>;
+export type HandlerHelpers<T> = {
+  addToTail: (item: T) => void;
+  skip: () => void;
+  throwError: (error: Error) => void;
+};
+
+export type Handler<T, U> = (item: T, helpers: HandlerHelpers<T>) => Promise<U | void>;
 
 export type ResultItem<U> = { type: 'result'; data: U };
 export type SkippedItem = { type: 'skipped'; message?: string };
