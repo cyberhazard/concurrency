@@ -1,4 +1,4 @@
-type Handler<T, U> = (item: T) => Promise<U | void>;
+type Handler<T, U> = (item: T, addFunction: (item: T) => void) => Promise<U | void>;
 type ResultItem<U> = {
     type: 'result';
     data: U;
@@ -38,7 +38,7 @@ type FuncResult<T, U> = {
     errors: ErrorResult<T>[];
 };
 
-declare const concurrency: <T, U>(data: T[], handler: Handler<T, U>, options: Options<T, U>) => Promise<FuncResult<T, U>>;
+declare const concurrency: <T, U>(data: T[], handler: Handler<T, U>, options?: Options<T, U>) => Promise<FuncResult<T, U>>;
 
 declare const retry: <T>(fn: () => Promise<T>, count: number, lastError?: Error) => Promise<T>;
 

@@ -14,9 +14,9 @@ var DEFAULT_CONCURRENCY = 1;
 var DEFAULT_DELAY = 0;
 var DEFAULT_RETRY_COUNT = 1;
 var wait = (ms) => new Promise((r) => setTimeout(r, ms));
-var concurrency = (data, handler, options) => new Promise((resolve, reject) => {
-  const iterator = data.values();
-  const total = data.length;
+var concurrency = (data, handler, options = {}) => new Promise((resolve, reject) => {
+  const input = [...data];
+  const iterator = input.values();
   let count = 1;
   let isAborted = false;
   const results = [];
@@ -27,15 +27,16 @@ var concurrency = (data, handler, options) => new Promise((resolve, reject) => {
       reject(Error(options.signal?.reason));
     });
   }
+  const addToInput = (item) => input.push(item);
   const promises = Array(options.concurrency || DEFAULT_CONCURRENCY).fill(iterator).map(async (items) => {
     for (const item of items) {
       if (isAborted) break;
       let result = { type: "empty" };
       try {
-        const data2 = await retry(() => handler(item), options.retries || DEFAULT_RETRY_COUNT);
-        if (data2) {
-          result = { type: "result", data: data2 };
-          results.push(data2);
+        const payload = await retry(() => handler(item, addToInput), options.retries || DEFAULT_RETRY_COUNT);
+        if (payload) {
+          result = { type: "result", data: payload };
+          results.push(payload);
         }
       } catch (error) {
         result = { type: "error", error };
@@ -43,7 +44,7 @@ var concurrency = (data, handler, options) => new Promise((resolve, reject) => {
       }
       options.logger?.({
         current: count++,
-        total,
+        total: input.length,
         item,
         result
       });
