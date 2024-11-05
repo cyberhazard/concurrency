@@ -42,4 +42,4 @@ declare const concurrency: <T, U>(data: T[], handler: Handler<T, U>, options?: O
 
 declare const retry: <T>(fn: () => Promise<T>, count: number, lastError?: Error) => Promise<T>;
 
-export { concurrency, retry };
+export { type Handler, type LoggerFunc, type Options, concurrency, retry };
