@@ -1,4 +1,9 @@
-type Handler<T, U> = (item: T, addFunction: (item: T) => void) => Promise<U | void>;
+type HandlerHelpers<T> = {
+    addToTail: (item: T) => void;
+    skip: () => void;
+    throwError: (error: Error) => void;
+};
+type Handler<T, U> = (item: T, helpers: HandlerHelpers<T>) => Promise<U | void>;
 type ResultItem<U> = {
     type: 'result';
     data: U;
