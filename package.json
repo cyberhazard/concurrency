@@ -1,6 +1,6 @@
 {
   "name": "concurrency",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "main": "build/main.js",
   "module": "build/main.mjs",
   "types": "build/main.d.ts",

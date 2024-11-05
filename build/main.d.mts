@@ -29,6 +29,7 @@ type LoggerArgs<T, U> = {
     current: number;
     item: T;
     result: Result<U>;
+    offset: number;
 };
 type LoggerFunc<T, U> = (data: LoggerArgs<T, U>) => void;
 type Options<T, U> = {

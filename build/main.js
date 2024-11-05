@@ -45,6 +45,7 @@ var concurrency = (data, handler, options = {}) => new Promise((resolve, reject)
   const input = [...data];
   const iterator = input.values();
   let count = 1;
+  let offset = 0;
   let isAborted = false;
   const results = [];
   const errors = [];
@@ -54,7 +55,13 @@ var concurrency = (data, handler, options = {}) => new Promise((resolve, reject)
       reject(Error(options.signal?.reason));
     });
   }
-  const addToTail = (item) => input.push(item);
+  const incOffset = (num = 1) => {
+    offset += num;
+  };
+  const addToTail = (item) => {
+    input.push(item);
+    incOffset();
+  };
   const promises = Array(options.concurrency || DEFAULT_CONCURRENCY).fill(iterator).map(async (items) => {
     for (const item of items) {
       if (isAborted) break;
@@ -86,7 +93,8 @@ var concurrency = (data, handler, options = {}) => new Promise((resolve, reject)
         current: count++,
         total: input.length,
         item,
-        result
+        result,
+        offset
       });
       await wait(options.delay || DEFAULT_DELAY);
     }
