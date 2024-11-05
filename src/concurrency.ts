@@ -42,10 +42,10 @@ export const concurrency = <T, U>(
           let result: Result<U> = { type: 'empty' };
 
           try {
-            const data = await retry(() => handler(item), options.retries || DEFAULT_RETRY_COUNT);
-            if (data) {
-              result = { type: 'result', data };
-              results.push(data);
+            const payload = await retry(() => handler(item), options.retries || DEFAULT_RETRY_COUNT);
+            if (payload) {
+              result = { type: 'result', data: payload };
+              results.push(payload);
             }
           } catch (error) {
             result = { type: 'error', error: error as Error };
