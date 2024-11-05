@@ -27,6 +27,8 @@ export type LoggerArgs<T, U> = {
   item: T;
   /** Result of current handler */
   result: Result<U>;
+  /** offset from initial input length */
+  offset: number;
 };
 
 export type LoggerFunc<T, U> = (data: LoggerArgs<T, U>) => void;
