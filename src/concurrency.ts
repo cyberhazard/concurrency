@@ -23,6 +23,7 @@ export const concurrency = <T, U>(
     const input = [...data];
     const iterator = input.values();
     let count = 1;
+    let offset = 0;
     let isAborted = false;
     const results: U[] = [];
     const errors: ErrorResult<T>[] = [];
@@ -34,7 +35,14 @@ export const concurrency = <T, U>(
       });
     }
 
-    const addToTail = (item: T) => input.push(item);
+    const incOffset = (num: number = 1) => {
+      offset += num;
+    };
+
+    const addToTail = (item: T) => {
+      input.push(item);
+      incOffset();
+    };
 
     const promises = Array<ArrayIterator<T>>(options.concurrency || DEFAULT_CONCURRENCY)
       .fill(iterator)
@@ -76,6 +84,7 @@ export const concurrency = <T, U>(
             total: input.length,
             item,
             result,
+            offset,
           });
 
           await wait(options.delay || DEFAULT_DELAY);
