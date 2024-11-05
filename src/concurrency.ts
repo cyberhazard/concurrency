@@ -20,8 +20,8 @@ export const concurrency = <T, U>(
   options: Options<T, U> = {},
 ): Promise<FuncResult<T, U>> =>
   new Promise((resolve, reject) => {
-    const iterator = data.values();
-    const total = data.length;
+    const input = [...data];
+    const iterator = input.values();
     let count = 1;
     let isAborted = false;
     const results: U[] = [];
@@ -34,6 +34,8 @@ export const concurrency = <T, U>(
       });
     }
 
+    const addToInput = (item: T) => input.push(item);
+
     const promises = Array<ArrayIterator<T>>(options.concurrency || DEFAULT_CONCURRENCY)
       .fill(iterator)
       .map(async (items) => {
@@ -42,7 +44,7 @@ export const concurrency = <T, U>(
           let result: Result<U> = { type: 'empty' };
 
           try {
-            const payload = await retry(() => handler(item), options.retries || DEFAULT_RETRY_COUNT);
+            const payload = await retry(() => handler(item, addToInput), options.retries || DEFAULT_RETRY_COUNT);
             if (payload) {
               result = { type: 'result', data: payload };
               results.push(payload);
@@ -54,7 +56,7 @@ export const concurrency = <T, U>(
 
           options.logger?.({
             current: count++,
-            total,
+            total: input.length,
             item,
             result,
           });
